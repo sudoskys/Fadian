@@ -37,14 +37,15 @@ class Fadian(object):
         self.api = "https://raw.githubusercontent.com/sudoskys/Fadian/main/fadian.json"
 
     async def fecthFadian(self):
-        # try:
-        req = await client.get(self.api, follow_redirects=True)
-        assert req.status_code == 200
-        self.data = req.json()
-        # except JSONDecodeError as e:
-        # await log(f"Warning: plugin fadian failed to refresh data. {e}")
-        # finally:
-        return self.data
+        try:
+            req = await client.get(self.api, follow_redirects=True)
+            assert req.status_code == 200
+            self.data = req.json()
+        except JSONDecodeError as e:
+            await log(f"Warning: plugin fadian failed to refresh data. {e}")
+            print(e)
+        finally:
+            return self.data
 
 
 fadianJi = Fadian()
@@ -66,14 +67,13 @@ async def refresher_data():
 async def chitang(message: Message):
     global fadianJi
     if not fadianJi.data:
-        pass
-        # await fadianJi.fecthFadian()
+        await fadianJi.fecthFadian()
     query = message.arguments
     if not query:
         return await message.edit("请指定发电对象")
     else:
         try:
-            org = await fadianJi.fecthFadian()  # fadianJi.data.get("data")
+            org = fadianJi.data
             all = org.get("data")
             random.shuffle(all)
         except Exception as e:
