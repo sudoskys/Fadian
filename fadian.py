@@ -1,10 +1,13 @@
+ 
 from secrets import choice
+
 from json.decoder import JSONDecodeError
+from pagermaid import log
+from pagermaid.utils import alias_command
 from pagermaid.listener import listener
 from pagermaid.enums import Message
 from pagermaid.utils import pip_install
 from pagermaid.services import client, scheduler
-from pagermaid import log
 from pagermaid.hook import Hook
 import random
 
@@ -31,7 +34,7 @@ class Fadian(object):
                 "-{name}姐姐的声音就像一瓶汽水。”“你指{name}的声音就是天籁之音？”“不，我的意思是，听了姐姐的声音就像夏天里的饮料机，脸贴在玻璃上许久才选到心怡的汽水，想把仔仔细细选中的汽水打开时盖子却不小心松掉了。”“然后汽水喷涌而出？”“然后我的心就扑通扑通的涌了出去，我想把我的心送给她。”",
             ]
         }
-        self.api = "https://raw.fastgit.org/sudoskys/Fadian/main/fadian.json"
+        self.api = "https://raw.githubusercontent.com/sudoskys/Fadian/main/fadian.json"
 
     async def fecthFadian(self):
         try:
@@ -40,7 +43,8 @@ class Fadian(object):
             self.data = req.json()
         except JSONDecodeError as e:
             await log(f"Warning: plugin fadian failed to refresh data. {e}")
-
+        return self.data
+ 
 
 fadianJi = Fadian()
 
@@ -61,11 +65,12 @@ async def refresher_data():
 async def chitang(message: Message):
     global fadianJi
     if not fadianJi.data:
-        await fadianJi.fecthFadian()
+        pass
+        #await fadianJi.fecthFadian()
     query = message.arguments
     if not query:
         return await message.edit("请指定发电对象")
     else:
-        all=fadianJi.data.get("data")
+        all=await fadianJi.fecthFadian().get("data") # fadianJi.data.get("data")
         random.shuffle(all)
         return await message.edit(choice(all).format(name=query))
