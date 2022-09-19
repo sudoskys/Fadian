@@ -54,8 +54,8 @@ async def init_data():
     await fadianJi.fecthFadian()
 
 
-@scheduler.scheduled_job("cron", hour="2", id="refresher_data")
-async def refresher_data():
+@scheduler.scheduled_job("cron", hour="1", id="fa_dian_refresher_data")
+async def fa_dian_refresher_data():
     await fadianJi.fecthFadian()
 
 
