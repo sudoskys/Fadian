@@ -1,4 +1,3 @@
-
 from secrets import choice
 
 from json.decoder import JSONDecodeError
@@ -10,6 +9,7 @@ from pagermaid.utils import pip_install
 from pagermaid.services import client, scheduler
 from pagermaid.hook import Hook
 import random
+
 
 # pip_install("asyncio")
 # pip_install("aiohttp")
@@ -37,13 +37,12 @@ class Fadian(object):
         self.api = "https://raw.githubusercontent.com/sudoskys/Fadian/main/fadian.json"
 
     async def fecthFadian(self):
-        # try:
-        req = await client.get(self.api, follow_redirects=True)
-        assert req.status_code == 200
-        self.data = req.json()
-        # except JSONDecodeError as e:
-        # await log(f"Warning: plugin fadian failed to refresh data. {e}")
-        # finally:
+        try:
+            req = await client.get(self.api, follow_redirects=True)
+            assert req.status_code == 200
+            self.data = req.json()
+        except JSONDecodeError as e:
+            await log(f"Warning: plugin fadian failed to refresh data. {e}")
         return self.data
 
 
@@ -55,7 +54,7 @@ async def init_data():
     await fadianJi.fecthFadian()
 
 
-@scheduler.scheduled_job("cron", hour="1", id="refresher_data")
+@scheduler.scheduled_job("cron", hour="2", id="refresher_data")
 async def refresher_data():
     await fadianJi.fecthFadian()
 
@@ -65,18 +64,19 @@ async def refresher_data():
           parameters="<query>")
 async def chitang(message: Message):
     global fadianJi
+    if fadianJi.data.get("date") == 0:
+        await fadianJi.fecthFadian()
     if not fadianJi.data:
-        pass
-        # await fadianJi.fecthFadian()
+        return
     query = message.arguments
     if not query:
         return await message.edit("请指定发电对象")
     else:
         try:
-            org = await fadianJi.fecthFadian()  # fadianJi.data.get("data")
-            all = org.get("data")
-            random.shuffle(all)
+            org = fadianJi.data
+            al_list = org.get("data")
+            random.shuffle(al_list)
         except Exception as e:
             return await message.edit(f'错误:{e}')
         else:
-            return await message.edit(choice(all).format(name=query))
+            return await message.edit(choice(al_list).format(name=query))
