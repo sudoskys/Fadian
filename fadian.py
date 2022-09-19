@@ -6,7 +6,7 @@ from pagermaid.utils import pip_install
 from pagermaid.services import client, scheduler
 from pagermaid import log
 from pagermaid.hook import Hook
-
+import random
 
 # pip_install("asyncio")
 # pip_install("aiohttp")
@@ -66,4 +66,6 @@ async def chitang(message: Message):
     if not query:
         return await message.edit("请指定发电对象")
     else:
-        return await message.edit(choice(fadianJi.data.get("data")).format(name=query))
+        all=fadianJi.data.get("data")
+        random.shuffle(all)
+        return await message.edit(choice(all).format(name=query))
